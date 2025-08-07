@@ -15,6 +15,9 @@ namespace _Project.Scripts
         {
             HandleKeyboardInput();
             HandleMouseDrag();
+#if UNITY_ANDROID || UNITY_IOS
+            HandleTouchInput();
+#endif
         }
 
         private void HandleKeyboardInput()
@@ -42,6 +45,30 @@ namespace _Project.Scripts
                 Vector3 move = new Vector3(-delta.x, 0, -delta.y) * (_dragSpeed * Time.deltaTime);
                 MoveCamera(move);
                 _lastMousePosition = Input.mousePosition;
+            }
+        }
+
+        private void HandleTouchInput()
+        {
+            if (Input.touchCount == 1)
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
+                {
+                    _lastMousePosition = touch.position;
+                    _isDragging = true;
+                }
+                else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                {
+                    _isDragging = false;
+                }
+                else if (touch.phase == TouchPhase.Moved && _isDragging)
+                {
+                    Vector3 delta = (Vector3)touch.position - _lastMousePosition;
+                    Vector3 move = new Vector3(-delta.x, 0, -delta.y) * (_dragSpeed * Time.deltaTime);
+                    MoveCamera(move);
+                    _lastMousePosition = touch.position;
+                }
             }
         }
 
